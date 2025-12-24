@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "702940862373",
+    "project_id": "lcapp-6773b",
+    "storage_bucket": "lcapp-6773b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:702940862373:android:a1d69625b4bf5cc1333a4c",
+        "android_client_info": {
+          "package_name": "com.example.productivity_program_v1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGeoLDOhdKsVfMCmb81p7GiLnzHad56aA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
