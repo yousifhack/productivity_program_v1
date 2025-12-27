@@ -9,6 +9,7 @@ environment:
   sdk: ^3.9.2
 
 dependencies:
+  shared_preferences: ^2.2.3
   flutter:
     sdk: flutter
 
@@ -21,6 +22,12 @@ dependencies:
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
   cloud_functions: ^5.1.4
+  firebase_storage: ^12.4.10
+
+  # Voice messages
+  record: ^6.1.2
+  path_provider: ^2.1.5
+  just_audio: ^0.10.5
 
   # Device-like behavior
   wakelock_plus: ^1.2.8

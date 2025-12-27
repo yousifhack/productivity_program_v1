@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // --------------------------
+    // Private user data (your app uses this a lot)
+    // users/{uid}/tasks
+    // users/{uid}/taskGroups
+    // users/{uid}/contacts
+    // users/{uid}/aiMessages
+    // etc...
+    // --------------------------
+    match /users/{uid} {
+      allow read, write: if isMe(uid);
+      match /{document=**} {
+        allow read, write: if isMe(uid);
+      }
+    }
+
+    // --------------------------
+    // Team chat (only participants can access)
+    // You MUST store: chats/{chatId} { participants: [uid1, uid2, ...] }
+    // and messages under: chats/{chatId}/messages/{msgId}
+    // --------------------------
+    match /chats/{chatId} {
+      allow create: if signedIn()
+        && request.resource.data.participants is list
+        && request.auth.uid in request.resource.data.participants;
+
+      allow read, update, delete: if signedIn()
+        && resource.data.participants is list
+        && request.auth.uid in resource.data.participants;
+
+      match /messages/{msgId} {
+        allow read, create: if signedIn()
+          && get(/databases/$(database)/documents/chats/$(chatId)).data.participants is list
+          && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+
+        // Keep messages immutable (prevents tampering)
+        allow update, delete: if false;
+      }
+    }
+
+    // --------------------------
+    // OPTIONAL (dev-friendly):
+    // If you still use a top-level /tasks collection anywhere (FirestorePaths.tasks)
+    // --------------------------
+    match /tasks/{taskId} {
+      allow read, write: if signedIn();
+    }
+  }
+}

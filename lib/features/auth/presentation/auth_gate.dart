@@ -1,52 +1,53 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:productivity_program_v1/core/services/auth_repository.dart';
 import 'package:productivity_program_v1/core/services/user_repo.dart';
 import 'sign_in_page.dart';
 
-/// AuthGate responsibility:
-/// 1) Listen to Firebase auth (User?)
-/// 2) If null → SignInPage
-/// 3) If logged in → fetch AppUser from Firestore
-/// 4) Redirect based on role
-class AuthGate extends ConsumerWidget {
+class AuthGate extends ConsumerStatefulWidget {
   const AuthGate({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends ConsumerState<AuthGate> {
+  @override
+  Widget build(BuildContext context) {
     final auth = ref.read(authRepositoryProvider);
 
     return StreamBuilder<User?>(
       stream: auth.authStateChanges,
       builder: (context, authSnap) {
         if (authSnap.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
         final firebaseUser = authSnap.data;
 
-        // Not logged in → Sign In
         if (firebaseUser == null) {
           return const SignInPage();
         }
 
-        // Logged in → resolve AppUser from Firestore
+        if (!firebaseUser.emailVerified) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            context.go('/verify-email');
+          });
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
         return FutureBuilder(
           future: ref.read(userRepoProvider).getUser(firebaseUser.uid),
           builder: (context, userSnap) {
             if (userSnap.connectionState == ConnectionState.waiting) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+              return const Scaffold(body: Center(child: CircularProgressIndicator()));
             }
 
             final appUser = userSnap.data;
-
             if (appUser == null) {
               return const Scaffold(
                 body: Center(
@@ -58,18 +59,13 @@ class AuthGate extends ConsumerWidget {
               );
             }
 
-            // Redirect ONCE after build
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (appUser.role == 'manager') {
-                context.go('/manager');
-              } else {
-                context.go('/employee');
-              }
+              if (!mounted) return;
+              // single unified home
+              context.go('/home');
             });
 
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           },
         );
       },

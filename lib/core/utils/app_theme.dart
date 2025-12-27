@@ -21,7 +21,7 @@ class AppTheme {
         centerTitle: false,
       ),
 
-      // Avoid deprecated withOpacity() by using withAlpha
+      // Avoid deprecated withValues() by using withAlpha
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF1E3A8A),
         surface: Colors.white,
