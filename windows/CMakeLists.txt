@@ -1,3 +1,8 @@
+# Workaround for CMake 4+: Firebase C++ SDK CMakeLists may request < 3.5 compatibility.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0")
+  set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
 project(productivity_program_v1 LANGUAGES CXX)
